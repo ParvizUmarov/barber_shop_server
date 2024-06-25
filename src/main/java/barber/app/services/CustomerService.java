@@ -28,17 +28,33 @@ public class CustomerService implements CRUDService<CustomerDto> {
     }
 
     @Override
-    public void create(CustomerDto customerDto) {
-        repository.save(mapToEntity(customerDto));
+    public void create(CustomerDto customerDto, String token) {
+        var customer = mapToEntity(customerDto);
+        repository.save(customer);
+    }
+
+    public CustomerDto register(CustomerDto customerDto) {
+        log.info("user mail: " + customerDto.getMail());
+        Customer responseFromDb = repository.findByMail(customerDto.getMail());
+
+        if(responseFromDb != null){
+            log.info("user exist");
+            throw new ResourceNotFoundException("Customer with <"+customerDto.getMail()+"> mail already exist");
+        }
+
+        var token = redisRepository.login(customerDto.getMail());
+        var customer = mapToEntity(customerDto);
+        repository.save(customer);
+        return mapToDtoFor2(customer, token);
     }
 
     @Override
-    public void update(CustomerDto object) {
-        repository.save(mapToEntity(object));
+    public void update(CustomerDto object, String token) {
+        //repository.save(mapToEntity(object));
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
         repository.deleteById(id);
     }
 
@@ -53,12 +69,13 @@ public class CustomerService implements CRUDService<CustomerDto> {
     }
 
     public void logout(String mail){
+        System.out.println("redis repository: logout user<"+mail+">");
         redisRepository.logout(mail);
     }
 
 
     @Override
-    public CustomerDto get(Integer id) {
+    public CustomerDto get(Integer id, String token) {
         Customer customer = repository.getById(id);
         return mapToDto(customer);
     }

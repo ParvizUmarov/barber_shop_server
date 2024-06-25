@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Repository
@@ -34,11 +36,15 @@ public class RedisRepository {
 
     public String checkUserToken(String mail, String token) {
         String t = (String) template.opsForHash().get(HASH_KEY, mail);
-        log.info(t);
-        log.info(mail);
-        if(t == null || !t.equals(token)){
-            throw new ResourceNotFoundException("You must authorized!");
+
+        if(t == null){
+            throw new ResourceNotFoundException("{error: You must authorized}");
         }
+
+        if(!t.equals(token)){
+            throw new ResourceNotFoundException("{error: You must authorized}");
+        }
+
         return t;
     }
 }

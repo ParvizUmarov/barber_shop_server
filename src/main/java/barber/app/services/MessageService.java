@@ -26,23 +26,23 @@ public class MessageService implements CRUDService<MessageDto> {
     }
 
     @Override
-    public void create(MessageDto object) {
+    public void create(MessageDto object, String token) {
         messageRepository.save(mapToEntity(object));
 
     }
 
     @Override
-    public void update(MessageDto object) {
+    public void update(MessageDto object, String token) {
 
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
         messageRepository.deleteById(id);
     }
 
     @Override
-    public MessageDto get(Integer id) {
+    public MessageDto get(Integer id, String token) {
         Message message = messageRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         return mapToDto(message);
     }

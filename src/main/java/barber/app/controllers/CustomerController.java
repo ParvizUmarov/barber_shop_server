@@ -1,9 +1,7 @@
 package barber.app.controllers;
 
-import barber.app.dto.BarberDto;
 import barber.app.dto.CustomerDto;
 import barber.app.dto.TokenDto;
-import barber.app.entity.LoginUser;
 import barber.app.services.CustomerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -29,27 +28,40 @@ public class CustomerController {
         return customerService.getAll();
     }
 
-    @PostMapping(name = "/register")
-    public void register(@RequestBody CustomerDto customerDto){
-        log.info("register customer ");
-        customerService.create(customerDto);
-    }
-
-    @GetMapping("/login")
-    public ResponseEntity login(@RequestBody LoginUser user){
+    @PostMapping("/register")
+    public ResponseEntity register(@RequestBody CustomerDto customerDto){
         try{
-            var customerDto =  customerService.login(user.getMail(), user.getPassword());
+            log.info("register customer " + customerDto.getMail());
+            var customerInfo = customerService.register(customerDto);
             TokenDto tokenDto = new TokenDto();
-            tokenDto.setMail(customerDto.getMail());
-            tokenDto.setToken(customerDto.getToken());
-            tokenDto.setUserId(customerDto.getId());
-            log.info("login customer: " + user);
+            tokenDto.setMail(customerInfo.getMail());
+            tokenDto.setToken(customerInfo.getToken());
+            tokenDto.setUid(customerInfo.getId());
             return ResponseEntity.ok(tokenDto);
         }catch (Exception e){
             log.error(e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
-                    .body(e.getMessage());
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+
+    }
+
+    @GetMapping("/login/{mail}/{password}")
+    public ResponseEntity login(@PathVariable String mail, @PathVariable String password){
+        try{
+            var customerDto =  customerService.login(mail, password);
+            TokenDto tokenDto = new TokenDto();
+            tokenDto.setMail(customerDto.getMail());
+            tokenDto.setToken(customerDto.getToken());
+            tokenDto.setUid(customerDto.getId());
+            log.info("login customer: " + mail);
+            return ResponseEntity.ok(tokenDto);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -65,12 +77,13 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id){
+    public void delete(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
         log.info("delete customer by id:", id);
-        customerService.delete(id);
+        customerService.delete(id, token);
     }
 
-    @GetMapping("/profile/{mail}")
+    @PostMapping("/profile/{mail}")
     public ResponseEntity getCustomerInfo(@PathVariable String mail, @RequestHeader Map<String, String> headers){
         var token = headers.get(HEADER_KEY);
         log.info("customer profile: " + mail);
@@ -78,11 +91,12 @@ public class CustomerController {
         return ResponseEntity.ok(customerDto);
     }
 
-    @PatchMapping("/{id}")
-    public void update(@PathVariable Integer id, @RequestBody CustomerDto customerDto){
-        log.info("update customer by id:", id);
-        customerDto.setId(id);
-        customerService.update(customerDto);
+    @PatchMapping("/update customer")
+    public void update(@RequestBody CustomerDto customerDto, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
+        log.info("update customer by id:"+ customerDto.getId());
+        customerDto.setId(customerDto.getId());
+        customerService.update(customerDto, token);
 
     }
 

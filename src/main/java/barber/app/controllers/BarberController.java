@@ -2,7 +2,6 @@ package barber.app.controllers;
 
 import barber.app.dto.BarberDto;
 import barber.app.dto.TokenDto;
-import barber.app.entity.LoginUser;
 import barber.app.services.BarberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 @Slf4j
@@ -29,24 +29,37 @@ public class BarberController {
         return barberService.getAll();
     }
 
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public void register(@RequestBody BarberDto barberDto){
+    @PostMapping("/register")
+    public ResponseEntity register(@RequestBody BarberDto barberDto){
+    try{
         log.info("create barber ");
-        barberService.create(barberDto);
+        var barber = barberService.register(barberDto);
+        TokenDto tokenDto = new TokenDto();
+        tokenDto.setMail(barber.getMail());
+        tokenDto.setToken(barber.getToken());
+        tokenDto.setUid(barber.getId());
+        return ResponseEntity.ok(tokenDto);
+    }catch (Exception e){
+        log.error(e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Collections.singletonMap("error", e.getMessage()));
+     }
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id){
+    public void delete(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
         log.info("delete barber by id:", id);
-        barberService.delete(id);
+        barberService.delete(id, token);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity get(@PathVariable Integer id){
+    public ResponseEntity get(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
         log.info("get barber by id:" + id);
         try{
-            BarberDto barberDto = barberService.get(id);
+            var token = headers.get(HEADER_KEY);
+            BarberDto barberDto = barberService.get(id, token);
             return ResponseEntity.ok(barberDto);
         }catch (Exception e){
             log.error(e.getMessage());
@@ -68,15 +81,15 @@ public class BarberController {
         }
     }
 
-    @GetMapping("/login")
-    public ResponseEntity login(@RequestBody LoginUser user){
-        log.info("login barber: " + user);
+    @GetMapping("/login/{mail}/{password}")
+    public ResponseEntity login(@PathVariable String mail, @PathVariable String password){
+        log.info("login barber: " + mail);
         try{
-            BarberDto login = barberService.login(user);
+            BarberDto login = barberService.login(mail, password);
             TokenDto tokenDto = new TokenDto();
             tokenDto.setMail(login.getMail());
             tokenDto.setToken(login.getToken());
-            tokenDto.setUserId(login.getId());
+            tokenDto.setUid(login.getId());
             return ResponseEntity.ok(tokenDto);
         }catch (Exception e){
             log.error(e.getMessage());
@@ -88,8 +101,8 @@ public class BarberController {
 
 
 
-    @GetMapping("/profile/{mail}")
-    public ResponseEntity findByToken(@RequestHeader Map<String, String> headers, @PathVariable String mail){
+    @PostMapping("/profile/{mail}")
+    public ResponseEntity getBarberInfo(@RequestHeader Map<String, String> headers, @PathVariable String mail){
         try{
             var token = headers.get(HEADER_KEY);
             log.info("find barber by token:" + token);
@@ -107,10 +120,11 @@ public class BarberController {
     @PutMapping("/update")
     public ResponseEntity update(@RequestHeader Map<String, String> headers, @RequestBody BarberDto barberDto){
         try{
-            barberService.checkToken(barberDto.getMail(), headers.get(HEADER_KEY));
+            var token = headers.get(HEADER_KEY);
+            barberService.checkToken(barberDto.getMail(), token);
             log.info("update barber by id: " + barberDto.getId());
             barberDto.setId(barberDto.getId());
-            barberService.update(barberDto);
+            barberService.update(barberDto, token);
             return ResponseEntity.ok("Barber <"+barberDto.getMail()+"> updated");
         }catch (Exception e){
             log.error(e.getMessage());

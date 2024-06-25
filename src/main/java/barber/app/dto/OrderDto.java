@@ -11,5 +11,6 @@ public class OrderDto {
     private Integer barberId;
     private String status;
     private Timestamp time;
-    private Integer grade;
+    private int grade;
+    private Integer serviceId;
 }

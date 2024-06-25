@@ -30,22 +30,22 @@ public class ServiceService implements CRUDService<ServiceDto>{
     }
 
     @Override
-    public void create(ServiceDto object) {
+    public void create(ServiceDto object, String token) {
        serviceRepository.save(mapToEntity(object));
     }
 
     @Override
-    public void update(ServiceDto object) {
+    public void update(ServiceDto object, String token) {
 
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
         serviceRepository.deleteById(id);
     }
 
     @Override
-    public ServiceDto get(Integer id) {
+    public ServiceDto get(Integer id, String token) {
         Services services = serviceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Service not found"));
         return mapToDto(services);
     }

@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -17,6 +18,7 @@ import java.util.Collection;
 public class ChatController {
 
     private final ChatService chatService;
+    private final String HEADER_KEY = "authorization";
 
     @GetMapping
     public Collection<ChatDto> getAll(){
@@ -26,11 +28,11 @@ public class ChatController {
 
 
 
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
-    public void create(@RequestBody ChatDto chatDto){
+    @PostMapping()
+    public void create(@RequestBody ChatDto chatDto, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
         log.info("create chat");
-        chatService.create(chatDto);
+        chatService.create(chatDto, token);
 
     }
 
@@ -41,9 +43,10 @@ public class ChatController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id){
+    public void delete(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
         log.info("delete chat by id: {}",id);
-        chatService.delete(id);
+        chatService.delete(id, token);
     }
 
 }

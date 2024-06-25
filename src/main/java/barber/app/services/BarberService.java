@@ -2,7 +2,6 @@ package barber.app.services;
 
 import barber.app.dto.BarberDto;
 import barber.app.entity.Barber;
-import barber.app.entity.LoginUser;
 import barber.app.repositories.BarberRepository;
 import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
@@ -31,12 +30,29 @@ public class BarberService implements CRUDService<BarberDto>{
     }
 
     @Override
-    public void create(BarberDto barberDto) {
+    public void create(BarberDto barberDto, String token) {
         repository.save(mapToEntity(barberDto));
     }
 
-    public BarberDto login(LoginUser user){
-        Barber barber = repository.login(user.getMail(), user.getPassword());
+
+
+    public BarberDto register(BarberDto barberDto) {
+        log.info("user mail: " + barberDto.getMail());
+        Barber responseFromDb = repository.findByMail(barberDto.getMail());
+
+        if(responseFromDb != null){
+            log.info("user exist");
+            throw new ResourceNotFoundException("Barber with <"+barberDto.getMail()+"> mail already exist");
+        }
+
+        var token = redisRepository.login(barberDto.getMail());
+        var barber = mapToEntity(barberDto);
+        repository.save(barber);
+        return mapToDtoForLogin(barber, token);
+    }
+
+    public BarberDto login(String mail, String password){
+        Barber barber = repository.login(mail, password);
         if(barber == null){
             throw new ResourceNotFoundException("Barber not found. Try to register or try again!");
         }
@@ -50,7 +66,7 @@ public class BarberService implements CRUDService<BarberDto>{
     }
 
     @Override
-    public void update(BarberDto barberDto) {
+    public void update(BarberDto barberDto, String token) {
         Barber barber = repository.findById(barberDto.getId()).orElseThrow(() -> new RuntimeException("Barber not found"));
         System.out.println("barber: " + barber);
         if(barberDto.getName() != null){barber.setName(barberDto.getName());}
@@ -65,7 +81,7 @@ public class BarberService implements CRUDService<BarberDto>{
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
        repository.deleteById(id);
     }
 
@@ -79,9 +95,9 @@ public class BarberService implements CRUDService<BarberDto>{
     }
 
     @Override
-    public BarberDto get(Integer id) {
+    public BarberDto get(Integer id, String token) {
         Barber barber = repository.findById(id).orElseThrow(() -> new RuntimeException("Barber not found"));
-        String userTokenByMail = redisRepository.checkUserToken(barber.getMail(), "");
+        String userTokenByMail = redisRepository.checkUserToken(barber.getMail(), token);
         log.info(userTokenByMail);
         return mapToDtoForLogin(barber, userTokenByMail);
     }

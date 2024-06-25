@@ -28,22 +28,22 @@ public class SalonService implements CRUDService<SalonDto>{
     }
 
     @Override
-    public void create(SalonDto object) {
+    public void create(SalonDto object, String token) {
         repository.save(mapToEntity(object));
     }
 
     @Override
-    public void update(SalonDto object) {
+    public void update(SalonDto object, String token) {
 
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
         repository.deleteById(id);
     }
 
     @Override
-    public SalonDto get(Integer id) {
+    public SalonDto get(Integer id, String token) {
         Salon salon =  repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Salon not found"));
         return mapToDto(salon);
     }

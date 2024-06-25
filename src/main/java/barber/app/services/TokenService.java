@@ -22,22 +22,22 @@ public class TokenService implements CRUDService<TokenDto>{
     }
 
     @Override
-    public void create(TokenDto object) {
+    public void create(TokenDto object, String token) {
 
     }
 
     @Override
-    public void update(TokenDto object) {
+    public void update(TokenDto object, String token) {
 
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id,String token) {
 
     }
 
     @Override
-    public TokenDto get(Integer id) {
+    public TokenDto get(Integer id, String token) {
         return null;
     }
 

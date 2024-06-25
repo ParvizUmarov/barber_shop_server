@@ -37,4 +37,7 @@ public class Order {
     @Column(name = "grade")
     private int grade;
 
+    @Column(name = "service_id")
+    private int serviceId;
+
 }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -15,6 +16,7 @@ import java.util.Collection;
 public class MessageController {
 
     private final MessageService messageService;
+    private final String HEADER_KEY = "authorization";
 
     @GetMapping
     public Collection<MessageDto> getAll(){
@@ -23,9 +25,10 @@ public class MessageController {
     }
 
     @PostMapping("/send")
-    public void create(@RequestBody MessageDto messageDto){
+    public void create(@RequestBody MessageDto messageDto, @RequestHeader Map<String, String> headers){
+        var token = headers.get(HEADER_KEY);
         log.info("create message ");
-        messageService.create(messageDto);
+        messageService.create(messageDto, token);
 
     }
 

@@ -30,25 +30,25 @@ public class ChatService implements CRUDService<ChatDto>{
     }
 
     @Override
-    public void create(ChatDto chatDto) {
+    public void create(ChatDto chatDto, String token) {
        barberRepository.findById(chatDto.getBarberId()).orElseThrow(() -> new ResourceNotFoundException("Barber not found"));
        customerRepository.findById(chatDto.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
        chatRepository.save(mapToEntity(chatDto));
     }
 
     @Override
-    public void update(ChatDto chatDto) {
+    public void update(ChatDto chatDto, String token) {
 
     }
 
     @Override
-    public void delete(Integer id) {
+    public void delete(Integer id, String token) {
         chatRepository.deleteById(id);
 
     }
 
     @Override
-    public ChatDto get(Integer id) {
+    public ChatDto get(Integer id, String token) {
         Chat chat = chatRepository.findById(id).orElseThrow(() -> new RuntimeException("Chat not found"));
         return mapToDto(chat);
     }

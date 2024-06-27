@@ -14,4 +14,10 @@ public class BarberDto {
     private Boolean authState;
     private Integer workExperience;
     private String token;
+    private Integer salonId;
+    private String salonAddress;
+    private String salonImages;
+    private Integer serviceId;
+    private String serviceName;
+    private Integer servicePrice;
 }

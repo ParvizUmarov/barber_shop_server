@@ -16,4 +16,7 @@ public class OrderInfoDto {
     private String status;
     private Timestamp time;
     private int grade;
+    private int serviceId;
+    private String serviceName;
+    private int servicePrice;
 }

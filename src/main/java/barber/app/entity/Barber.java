@@ -41,4 +41,13 @@ public class Barber {
     @Column(name = "work_experience")
     private Integer workExperience;
 
+    @ManyToOne
+    @JoinColumn(name = "salon_id")
+    private Salon salon;
+
+    @ManyToOne
+    @JoinColumn(name = "service_id")
+    private Services service;
+
+
 }

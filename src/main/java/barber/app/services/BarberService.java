@@ -1,6 +1,7 @@
 package barber.app.services;
 
 import barber.app.dto.BarberDto;
+import barber.app.dto.OrderInfoDto;
 import barber.app.entity.Barber;
 import barber.app.repositories.BarberRepository;
 import barber.app.repositories.RedisRepository;
@@ -9,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -63,6 +67,12 @@ public class BarberService implements CRUDService<BarberDto>{
 
     public void logout(String mail){
         redisRepository.logout(mail);
+    }
+
+    public Collection<BarberDto> getAllBarberInfo(String token){
+        var barbersInfo = repository.getAllBarbersInfo();
+        log.info("barbers info: " + barbersInfo.toString());
+        return barberInfoDto(barbersInfo);
     }
 
     @Override
@@ -148,6 +158,27 @@ public class BarberService implements CRUDService<BarberDto>{
         barberDto.setAuthState(barber.getAuthState());
         barberDto.setToken(token);
         return barberDto;
+    }
+
+    public static Collection<BarberDto> barberInfoDto(Collection<Map<String, Object>> barbersInfo) {
+        return barbersInfo.stream()
+                .map(barber -> {
+                    BarberDto barberDto = new BarberDto();
+                    barberDto.setId(Integer.parseInt(barber.get("barberId").toString()));
+                    barberDto.setName(barber.get("barberName").toString());
+                    barberDto.setSurname(barber.get("barberSurname").toString());
+                    barberDto.setPhone(barber.get("barberPhone").toString());
+                    barberDto.setMail(barber.get("barberMail").toString());
+                    barberDto.setWorkExperience(Integer.parseInt(barber.get("workExperience").toString()));
+                    barberDto.setSalonId(Integer.parseInt(barber.get("salonID").toString()));
+                    barberDto.setSalonAddress(barber.get("salonAddress").toString());
+                    barberDto.setSalonImages(barber.get("salonImages").toString());
+                    barberDto.setServiceId(Integer.parseInt( barber.get("serviceId").toString()));
+                    barberDto.setServiceName(barber.get("serviceName").toString());
+                    barberDto.setServicePrice(Integer.parseInt(barber.get("servicePrice").toString()));
+                    return barberDto;
+                })
+                .collect(Collectors.toList());
     }
 
 

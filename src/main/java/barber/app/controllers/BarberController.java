@@ -99,6 +99,20 @@ public class BarberController {
         }
     }
 
+    @GetMapping("/allInfo")
+    public ResponseEntity getAllBarberInfo(@RequestHeader Map<String, String> headers){
+        try{
+            var token = headers.get(HEADER_KEY);
+            var response = barberService.getAllBarberInfo(token);
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
 
 
     @PostMapping("/profile/{mail}")

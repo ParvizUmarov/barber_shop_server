@@ -5,6 +5,7 @@ import barber.app.dto.OrderInfoDto;
 import barber.app.entity.Barber;
 import barber.app.entity.Customer;
 import barber.app.entity.Order;
+import barber.app.entity.Services;
 import barber.app.repositories.BarberRepository;
 import barber.app.repositories.CustomerRepository;
 import barber.app.repositories.OrderRepository;
@@ -60,6 +61,12 @@ public class OrderService implements CRUDService<OrderDto>{
 
     }
 
+    public Collection<OrderInfoDto> getCustomerReservedOrder(Integer id, String token) {
+        Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        checkToken(customer.getMail(), token);
+        return orderInfoToDto(ordersRepository.getCustomerReservedOrder(id));
+    }
+
     public void cancelOrder(Integer id, String token, String userType){
         checkToken("", token);
         ordersRepository.canceledOrder(id);
@@ -89,7 +96,9 @@ public class OrderService implements CRUDService<OrderDto>{
         return orderInfoToDto(ordersRepository.getOrdersByBarber(id));
     }
 
-    public Collection<OrderInfoDto> getCustomersOrder(Integer id) {
+    public Collection<OrderInfoDto> getCustomersOrder(Integer id, String token) {
+        Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+        checkToken(customer.getMail(), token);
         return orderInfoToDto(ordersRepository.getOrdersByCustomer(id));
     }
 
@@ -102,6 +111,8 @@ public class OrderService implements CRUDService<OrderDto>{
         Order order = new Order();
         Barber barber = new Barber();
         Customer customer = new Customer();
+        Services services = new Services();
+        services.setId(orderDto.getServiceId());
         customer.setId(orderDto.getCustomerId());
         barber.setId(orderDto.getBarberId());
         order.setId(orderDto.getId());
@@ -110,7 +121,7 @@ public class OrderService implements CRUDService<OrderDto>{
         order.setStatus(orderDto.getStatus());
         order.setTime(orderDto.getTime());
         order.setGrade(orderDto.getGrade());
-        order.setServiceId(orderDto.getServiceId());
+        order.setService(services);
         return order;
     }
 
@@ -122,7 +133,7 @@ public class OrderService implements CRUDService<OrderDto>{
         orderDto.setCustomerId(order.getCustomer().getId());
         orderDto.setGrade(order.getGrade());
         orderDto.setTime(order.getTime());
-        orderDto.setServiceId(order.getServiceId());
+        orderDto.setServiceId(order.getService().getId());
         return orderDto;
     }
 
@@ -140,6 +151,9 @@ public class OrderService implements CRUDService<OrderDto>{
                     orderInfo.setTime((Timestamp) order.get("time"));
                     orderInfo.setGrade(Integer.parseInt(order.get("grade").toString()));
                     orderInfo.setStatus(order.get("status").toString());
+                    orderInfo.setServiceId(Integer.parseInt(order.get("serviceId").toString()));
+                    orderInfo.setServiceName(order.get("serviceName").toString());
+                    orderInfo.setServicePrice(Integer.parseInt(order.get("servicePrice").toString()));
                     return orderInfo;
                 })
                 .collect(Collectors.toList());

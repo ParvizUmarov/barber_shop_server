@@ -23,15 +23,16 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Transactional
     @Modifying
     @Query("UPDATE Order o SET o.status = \"DONE\" WHERE o.id = ?1")
-    void doneOrder(Integer id);
+    void doneOrder( Integer id);
 
     @Transactional
     @Modifying
     @Query("UPDATE Order o SET o.status = \"CHANGED\" WHERE o.id = ?1")
     void changedOrder(Integer id);
 
-    @Query("SELECT new map(c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
-            "o.status as status, o.time as time, o.grade as grade, b.id as barberId, b.name as barberName, b.phone as barberPhone) " +
+    @Query("SELECT new map(o.id as id, c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
+            "o.status as status, o.time as time, o.grade as grade, b.id as barberId, b.name as barberName, b.phone as barberPhone," +
+            " o.service.id as serviceId, o.service.name as serviceName, o.service.price as servicePrice) " +
             "FROM Order o " +
             "INNER JOIN o.customer c " +
             "INNER JOIN o.barber b " +
@@ -39,11 +40,21 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Collection<Map<String, Object>> getOrdersByCustomer(Integer customerId);
 
     @Query("SELECT new map(o.id as id, b.id as barberId, b.name as barberName, b.phone as barberPhone, " +
-            "o.status as status, o.time as time, o.grade as grade, c.id as customerId, c.name as customerName, c.phone as customerPhone) " +
+            "o.status as status, o.time as time, o.grade as grade, c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
+            "o.service.id as serviceId, o.service.name as serviceName, o.service.price as servicePrice) " +
             "FROM Order o " +
             "INNER JOIN o.barber b " +
             "INNER JOIN o.customer c " +
             "WHERE b.id = ?1 ORDER BY o.time DESC LIMIT 10")
     Collection<Map<String, Object>> getOrdersByBarber(Integer barberId);
+
+    @Query("SELECT new map(o.id as id, c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
+            "o.status as status, o.time as time, o.grade as grade, b.id as barberId, b.name as barberName, b.phone as barberPhone," +
+            " o.service.id as serviceId, o.service.name as serviceName, o.service.price as servicePrice) " +
+            "FROM Order o " +
+            "INNER JOIN o.customer c " +
+            "INNER JOIN o.barber b " +
+            "WHERE c.id = ?1 AND o.status = 'RESERVED' ORDER BY o.time DESC")
+    Collection<Map<String, Object>> getCustomerReservedOrder(Integer customerId);
 
 }

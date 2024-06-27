@@ -44,12 +44,20 @@ public class OrderController {
     }
 
     @GetMapping("/customer/{id}")
-    public Collection<OrderInfoDto> getCustomerOrders(@PathVariable Integer id){
-        log.info("get all customer orders by id: " + id);
-        return orderService.getCustomersOrder(id);
+    public ResponseEntity getCustomerOrders(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+        try{
+            var token = headers.get(HEADER_KEY);
+            log.info("get all customer orders by id: " + id);
+            return ResponseEntity.ok(orderService.getCustomersOrder(id, token));
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
     }
 
-    @PostMapping("/customer/createOrder")
+    @PostMapping("/customer/create_order")
     public ResponseEntity createOrder(@RequestBody OrderDto orderDto, @RequestHeader Map<String, String> headers){
         try{
             var token = headers.get(HEADER_KEY);
@@ -82,7 +90,7 @@ public class OrderController {
     public ResponseEntity doneOrder(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
         try{
             var token = headers.get(HEADER_KEY);
-            orderService.doneOrder(id, token);
+            orderService.doneOrder(id ,token);
             return ResponseEntity.ok("{response: order <"+id+"> is done}");
         }catch (Exception e){
             log.error(e.getMessage());
@@ -92,6 +100,20 @@ public class OrderController {
         }
     }
 
+
+    @GetMapping("/customer/{id}/reserved")
+    public ResponseEntity getCustomerReservedOrder(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+        try{
+            var token = headers.get(HEADER_KEY);
+            var response =  orderService.getCustomerReservedOrder(id ,token);
+            return ResponseEntity.ok(response);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
 
 
 }

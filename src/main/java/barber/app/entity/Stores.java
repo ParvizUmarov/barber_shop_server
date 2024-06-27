@@ -1,6 +1,5 @@
 package barber.app.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,8 +11,8 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @ToString
-@Table(name = "orders")
-public class Order {
+@Table(name = "stores")
+public class Stores {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,21 +23,10 @@ public class Order {
     @JoinColumn(name = "barber_id")
     private Barber barber;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
-
-    @Column(name = "status")
-    private String status;
+    @Column(name = "image")
+    private String image;
 
     @Column(name = "time")
     private Timestamp time;
-
-    @Column(name = "grade")
-    private int grade;
-
-    @ManyToOne
-    @JoinColumn(name = "service_id")
-    private Services service;
 
 }

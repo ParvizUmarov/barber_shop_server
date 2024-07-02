@@ -11,14 +11,13 @@ import barber.app.repositories.CustomerRepository;
 import barber.app.repositories.OrderRepository;
 import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -46,13 +45,7 @@ public class OrderService implements CRUDService<OrderDto>{
     }
 
     public void saveOrder(OrderDto object, String token, String userType){
-        if(userType.equals("CUSTOMER")){
-           var customer = customerRepository.findById(object.getCustomerId());
-           checkToken(customer.get().getMail(), token);
-        }else{
-            var customer = barberRepository.findById(object.getBarberId());
-            checkToken(customer.get().getMail(), token);
-        }
+        checkToken(token);
         ordersRepository.save(mapToEntity(object));
     }
 
@@ -61,14 +54,13 @@ public class OrderService implements CRUDService<OrderDto>{
 
     }
 
-    public Collection<OrderInfoDto> getCustomerReservedOrder(Integer id, String token) {
-        Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        checkToken(customer.getMail(), token);
-        return orderInfoToDto(ordersRepository.getCustomerReservedOrder(id));
+    public Collection<OrderInfoDto> getCustomerReservedOrder(String token) {
+        var user =  checkToken(token);
+        return orderInfoToDto(ordersRepository.getCustomerReservedOrder(user.getId()));
     }
 
     public void cancelOrder(Integer id, String token, String userType){
-        checkToken("", token);
+        checkToken(token);
         ordersRepository.canceledOrder(id);
         log.info("canceled order by id: " + id);
     }
@@ -91,20 +83,49 @@ public class OrderService implements CRUDService<OrderDto>{
     }
 
     public Collection<OrderInfoDto> getBarbersOrder(Integer id, String token) {
-        Barber barber = barberRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Barber not found"));
-        checkToken(barber.getMail(), token);
-        return orderInfoToDto(ordersRepository.getOrdersByBarber(id));
+        checkToken(token);
+        return orderInfoToDto(ordersRepository.getAllBarberOrder(id));
     }
 
-    public Collection<OrderInfoDto> getCustomersOrder(Integer id, String token) {
-        Customer customer = customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-        checkToken(customer.getMail(), token);
-        return orderInfoToDto(ordersRepository.getOrdersByCustomer(id));
+    public Collection<OrderInfoDto> getBarbersReservedOrder(String token) {
+        var user = checkToken(token);
+        return orderInfoToDto(ordersRepository.getBarberReservedOrder(user.getId()));
+    }
+
+    public Collection<List<OrderInfoDto>> getAllBarberOrders(String token) {
+        var user = checkToken(token);
+        Collection<OrderInfoDto> allOrders = orderInfoToDto(ordersRepository.getAllBarberOrder(user.getId()));
+        List<OrderInfoDto> doneOrders = new ArrayList<>();
+        List<OrderInfoDto> reservedOrders = new ArrayList<>();
+        List<OrderInfoDto> canceledOrders = new ArrayList<>();
+
+        var listOfOrders = allOrders.stream().toList();
+        for(var order : listOfOrders){
+            if(order.getStatus().equals("DONE")){
+                doneOrders.add(order);
+            }else if(order.getStatus().equals("RESERVED")){
+                reservedOrders.add(order);
+            }else if(order.getStatus().equals("CANCELED")){
+                canceledOrders.add(order);
+            }
+        }
+
+        Collection<List<OrderInfoDto>> orders = new ArrayList<>();
+        orders.add(doneOrders);
+        orders.add(reservedOrders);
+        orders.add(canceledOrders);
+
+        return orders;
+    }
+
+    public Collection<OrderInfoDto> getCustomersOrder(String token) {
+        var user = checkToken(token);
+        return orderInfoToDto(ordersRepository.getOrdersByCustomer(user.getId()));
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken(token);
     }
 
     public static Order mapToEntity(OrderDto orderDto){

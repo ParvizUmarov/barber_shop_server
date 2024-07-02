@@ -65,11 +65,12 @@ public class CustomerController {
         }
     }
 
-    @GetMapping("/logout/{mail}")
-    public ResponseEntity logout(@PathVariable String mail){
+    @GetMapping("/logout")
+    public ResponseEntity logout(@RequestHeader Map<String, String> headers){
         try{
-            customerService.logout(mail);
-            return ResponseEntity.ok("Customer <"+mail+"> is logout");
+            var token = headers.get(HEADER_KEY);
+            customerService.logout(token);
+            return ResponseEntity.ok("Customer <"+token+"> is logout");
         }catch (Exception e){
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -83,11 +84,11 @@ public class CustomerController {
         customerService.delete(id, token);
     }
 
-    @PostMapping("/profile/{mail}")
-    public ResponseEntity getCustomerInfo(@PathVariable String mail, @RequestHeader Map<String, String> headers){
+    @GetMapping("/profile")
+    public ResponseEntity getCustomerInfo(@RequestHeader Map<String, String> headers){
         var token = headers.get(HEADER_KEY);
-        log.info("customer profile: " + mail);
-        CustomerDto customerDto = customerService.getCustomerInfo(mail, token);
+        log.info("customer profile: " + token);
+        CustomerDto customerDto = customerService.getCustomerInfo(token);
         return ResponseEntity.ok(customerDto);
     }
 
@@ -99,7 +100,4 @@ public class CustomerController {
         customerService.update(customerDto, token);
 
     }
-
-
-
 }

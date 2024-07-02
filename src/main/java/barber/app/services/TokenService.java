@@ -2,6 +2,7 @@ package barber.app.services;
 
 import barber.app.dto.TokenDto;
 import barber.app.repositories.RedisRepository;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,8 +43,8 @@ public class TokenService implements CRUDService<TokenDto>{
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken( token);
     }
 
 }

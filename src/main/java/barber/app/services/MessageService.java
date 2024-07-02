@@ -6,6 +6,7 @@ import barber.app.entity.Message;
 import barber.app.repositories.MessageRepository;
 import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.Collection;
@@ -48,8 +49,8 @@ public class MessageService implements CRUDService<MessageDto> {
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken(token);
     }
 
     public Collection<MessageDto> getMessagesByChatId(Integer id){

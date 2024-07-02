@@ -1,6 +1,5 @@
 package barber.app.repositories;
 
-import barber.app.entity.Barber;
 import barber.app.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -46,7 +45,16 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             "INNER JOIN o.barber b " +
             "INNER JOIN o.customer c " +
             "WHERE b.id = ?1 ORDER BY o.time DESC LIMIT 10")
-    Collection<Map<String, Object>> getOrdersByBarber(Integer barberId);
+    Collection<Map<String, Object>> getAllBarberOrder(Integer barberId);
+
+    @Query("SELECT new map(o.id as id, b.id as barberId, b.name as barberName, b.phone as barberPhone, " +
+            "o.status as status, o.time as time, o.grade as grade, c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
+            "o.service.id as serviceId, o.service.name as serviceName, o.service.price as servicePrice) " +
+            "FROM Order o " +
+            "INNER JOIN o.barber b " +
+            "INNER JOIN o.customer c " +
+            "WHERE b.id = ?1 AND o.status = 'RESERVED' ORDER BY o.time DESC LIMIT 10")
+    Collection<Map<String, Object>> getBarberReservedOrder(Integer barberId);
 
     @Query("SELECT new map(o.id as id, c.id as customerId, c.name as customerName, c.phone as customerPhone, " +
             "o.status as status, o.time as time, o.grade as grade, b.id as barberId, b.name as barberName, b.phone as barberPhone," +

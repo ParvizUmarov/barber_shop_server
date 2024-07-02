@@ -70,11 +70,12 @@ public class BarberController {
 
     }
 
-    @GetMapping("/logout/{mail}")
-    public ResponseEntity logout(@PathVariable String mail){
+    @GetMapping("/logout")
+    public ResponseEntity logout(@RequestHeader Map<String, String> headers){
         try{
-            barberService.logout(mail);
-            return ResponseEntity.ok("Barber <"+mail+"> is logout");
+            var token = headers.get(HEADER_KEY);
+            barberService.logout(token);
+            return ResponseEntity.ok("Barber <"+token+"> is logout");
         }catch (Exception e){
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Barber not found");
@@ -115,12 +116,12 @@ public class BarberController {
 
 
 
-    @PostMapping("/profile/{mail}")
-    public ResponseEntity getBarberInfo(@RequestHeader Map<String, String> headers, @PathVariable String mail){
+    @GetMapping("/profile")
+    public ResponseEntity getBarberInfo(@RequestHeader Map<String, String> headers){
         try{
             var token = headers.get(HEADER_KEY);
             log.info("find barber by token:" + token);
-            BarberDto barberDto = barberService.getBarberInfo(mail, token);
+            BarberDto barberDto = barberService.getBarberInfo(token);
             return ResponseEntity.ok(barberDto);
         }catch (Exception e){
             log.error(e.getMessage());
@@ -135,7 +136,7 @@ public class BarberController {
     public ResponseEntity update(@RequestHeader Map<String, String> headers, @RequestBody BarberDto barberDto){
         try{
             var token = headers.get(HEADER_KEY);
-            barberService.checkToken(barberDto.getMail(), token);
+            barberService.checkToken(token);
             log.info("update barber by id: " + barberDto.getId());
             barberDto.setId(barberDto.getId());
             barberService.update(barberDto, token);

@@ -40,15 +40,40 @@ public class OrderController {
                     .status(HttpStatus.NOT_FOUND)
                     .body(e.getMessage());
         }
-
     }
 
-    @GetMapping("/customer/{id}")
-    public ResponseEntity getCustomerOrders(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+    @GetMapping("/barber/reserved_order")
+    public ResponseEntity getAllBarberReservedOrder(@RequestHeader Map<String, String> headers){
         try{
             var token = headers.get(HEADER_KEY);
-            log.info("get all customer orders by id: " + id);
-            return ResponseEntity.ok(orderService.getCustomersOrder(id, token));
+            log.info("get all barber reserved_order by token: " + token);
+            return ResponseEntity.ok(orderService.getBarbersReservedOrder(token));
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/barber/all_orders")
+    public ResponseEntity getAllBarberOrders(@RequestHeader Map<String, String> headers){
+        try{
+            var token = headers.get(HEADER_KEY);
+            log.info("get all barber all_order by token: " + token);
+            return ResponseEntity.ok(orderService.getAllBarberOrders(token));
+        }catch (Exception e){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/customer")
+    public ResponseEntity getCustomerOrders(@RequestHeader Map<String, String> headers){
+        try{
+            var token = headers.get(HEADER_KEY);
+            log.info("get all customer orders by token: " + token);
+            return ResponseEntity.ok(orderService.getCustomersOrder(token));
         }catch (Exception e){
             log.error(e.getMessage());
             return ResponseEntity
@@ -101,11 +126,11 @@ public class OrderController {
     }
 
 
-    @GetMapping("/customer/{id}/reserved")
-    public ResponseEntity getCustomerReservedOrder(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
+    @GetMapping("/customer/reserved")
+    public ResponseEntity getCustomerReservedOrder(@RequestHeader Map<String, String> headers){
         try{
             var token = headers.get(HEADER_KEY);
-            var response =  orderService.getCustomerReservedOrder(id ,token);
+            var response =  orderService.getCustomerReservedOrder(token);
             return ResponseEntity.ok(response);
         }catch (Exception e){
             log.error(e.getMessage());

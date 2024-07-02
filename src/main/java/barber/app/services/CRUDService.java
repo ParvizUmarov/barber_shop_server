@@ -1,4 +1,6 @@
 package barber.app.services;
+import barber.app.session.SessionUser;
+
 import java.util.Collection;
 
 public interface CRUDService<T> {
@@ -7,5 +9,5 @@ public interface CRUDService<T> {
     void update(T object, String token);
     void delete(Integer id, String token);
     T get(Integer id, String token);
-    String checkToken(String mail,String token);
+    SessionUser checkToken(String token);
 }

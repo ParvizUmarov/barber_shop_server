@@ -5,6 +5,7 @@ import barber.app.entity.Salon;
 import barber.app.repositories.RedisRepository;
 import barber.app.repositories.SalonRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,8 +50,8 @@ public class SalonService implements CRUDService<SalonDto>{
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken( token);
     }
 
     public static Salon mapToEntity(SalonDto salonDto){

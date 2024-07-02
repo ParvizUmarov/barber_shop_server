@@ -5,6 +5,7 @@ import barber.app.entity.Customer;
 import barber.app.repositories.CustomerRepository;
 import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class CustomerService implements CRUDService<CustomerDto> {
             throw new ResourceNotFoundException("Customer with <"+customerDto.getMail()+"> mail already exist");
         }
 
-        var token = redisRepository.login(customerDto.getMail());
+        var token = redisRepository.login(customerDto.getMail(), customerDto.getId());
         var customer = mapToEntity(customerDto);
         repository.save(customer);
         return mapToDtoFor2(customer, token);
@@ -63,16 +64,15 @@ public class CustomerService implements CRUDService<CustomerDto> {
         if(customer == null){
             throw new ResourceNotFoundException("Customer not found. Try to register or try again!");
         }
-        var token = redisRepository.login(mail);
+        var token = redisRepository.login(mail, customer.getId());
         log.info("customer <"+customer.getMail()+"> successfully authorized");
         return mapToDtoFor2(customer, token);
     }
 
-    public void logout(String mail){
-        System.out.println("redis repository: logout user<"+mail+">");
-        redisRepository.logout(mail);
+    public void logout(String token){
+        System.out.println("redis repository: logout user<"+token+">");
+        redisRepository.logout(token);
     }
-
 
     @Override
     public CustomerDto get(Integer id, String token) {
@@ -81,17 +81,17 @@ public class CustomerService implements CRUDService<CustomerDto> {
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken(token);
     }
 
-    public CustomerDto getCustomerInfo(String mail, String token) {
-        var userToken = checkToken(mail, token);
-        Customer customer = repository.findByMail(mail);
+    public CustomerDto getCustomerInfo(String token) {
+        var userToken = checkToken(token);
+        Customer customer = repository.findByMail(userToken.getMail());
         if (customer == null) {
             throw new RuntimeException("Customer not found");
         }
-        return mapToDtoFor2(customer, userToken);
+        return mapToDtoFor2(customer, userToken.getToken());
     }
 
 

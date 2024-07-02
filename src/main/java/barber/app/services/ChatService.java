@@ -7,7 +7,9 @@ import barber.app.entity.Customer;
 import barber.app.repositories.BarberRepository;
 import barber.app.repositories.ChatRepository;
 import barber.app.repositories.CustomerRepository;
+import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class ChatService implements CRUDService<ChatDto>{
     private final ChatRepository chatRepository;
     private final BarberRepository barberRepository;
     private final CustomerRepository customerRepository;
+    private final RedisRepository redisRepository;
 
     @Override
     public Collection<ChatDto> getAll() {
@@ -54,8 +57,8 @@ public class ChatService implements CRUDService<ChatDto>{
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return "";
+    public SessionUser checkToken(String token) {
+        return  redisRepository.checkUserToken(token);
     }
 
     public Collection<ChatDto> getChatByBarberId(Integer id){

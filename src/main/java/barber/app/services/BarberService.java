@@ -4,8 +4,10 @@ import barber.app.dto.BarberDto;
 import barber.app.dto.OrderInfoDto;
 import barber.app.entity.Barber;
 import barber.app.repositories.BarberRepository;
+import barber.app.repositories.OrderRepository;
 import barber.app.repositories.RedisRepository;
 import barber.app.restExceptionHandler.ResourceNotFoundException;
+import barber.app.session.SessionUser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,7 +51,7 @@ public class BarberService implements CRUDService<BarberDto>{
             throw new ResourceNotFoundException("Barber with <"+barberDto.getMail()+"> mail already exist");
         }
 
-        var token = redisRepository.login(barberDto.getMail());
+        var token = redisRepository.login(barberDto.getMail(), barberDto.getId());
         var barber = mapToEntity(barberDto);
         repository.save(barber);
         return mapToDtoForLogin(barber, token);
@@ -60,13 +62,13 @@ public class BarberService implements CRUDService<BarberDto>{
         if(barber == null){
             throw new ResourceNotFoundException("Barber not found. Try to register or try again!");
         }
-        var token = redisRepository.login(barber.getMail());
+        var token = redisRepository.login(barber.getMail(), barber.getId());
         log.info("barber <"+barber.getMail()+"> successfully authorized");
         return mapToDtoForLogin(barber, token);
     }
 
-    public void logout(String mail){
-        redisRepository.logout(mail);
+    public void logout(String token){
+        redisRepository.logout(token);
     }
 
     public Collection<BarberDto> getAllBarberInfo(String token){
@@ -95,26 +97,25 @@ public class BarberService implements CRUDService<BarberDto>{
        repository.deleteById(id);
     }
 
-    public BarberDto getBarberInfo(String mail, String token){
-        String userTokenByMail = checkToken(mail, token);
-        Barber barber = repository.findByMail(mail);
+    public BarberDto getBarberInfo(String token){
+        var user = checkToken(token);
+        Barber barber = repository.findByMail(user.getMail());
         if (barber == null) {
             throw new RuntimeException("Barber not found");
         }
-        return mapToDtoForLogin(barber, userTokenByMail);
+        return mapToDtoForLogin(barber, user.getToken());
     }
 
     @Override
     public BarberDto get(Integer id, String token) {
         Barber barber = repository.findById(id).orElseThrow(() -> new RuntimeException("Barber not found"));
-        String userTokenByMail = redisRepository.checkUserToken(barber.getMail(), token);
-        log.info(userTokenByMail);
-        return mapToDtoForLogin(barber, userTokenByMail);
+        var userTokenByMail = redisRepository.checkUserToken(token);
+        return mapToDtoForLogin(barber, userTokenByMail.getToken());
     }
 
     @Override
-    public String checkToken(String mail, String token) {
-        return redisRepository.checkUserToken(mail, token);
+    public SessionUser checkToken(String token) {
+        return redisRepository.checkUserToken(token);
     }
 
     public static Barber mapToEntity(BarberDto barberDto){

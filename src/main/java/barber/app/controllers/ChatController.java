@@ -42,6 +42,12 @@ public class ChatController {
         return chatService.getChatByBarberId(id);
     }
 
+    @GetMapping("/customer/{id}")
+    public Collection<ChatDto> getChatByCustomerId(@PathVariable Integer id){
+        log.info("get chat by customer id: " + id);
+        return chatService.getChatByCustomerId(id);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id, @RequestHeader Map<String, String> headers){
         var token = headers.get(HEADER_KEY);

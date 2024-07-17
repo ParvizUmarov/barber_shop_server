@@ -62,12 +62,14 @@ public class ChatService implements CRUDService<ChatDto>{
     }
 
     public Collection<ChatDto> getChatByBarberId(Integer id){
-        Collection<Chat> chatByBarberId = chatRepository.findChatByBarberId(id);
-        chatByBarberId.forEach((value) -> {
-            System.out.println(value);
-        });
-
         return chatRepository.findChatByBarberId(id)
+                .stream()
+                .map(ChatService::mapToDto)
+                .toList();
+    }
+
+    public Collection<ChatDto> getChatByCustomerId(Integer id){
+        return chatRepository.findChatByCustomerId(id)
                 .stream()
                 .map(ChatService::mapToDto)
                 .toList();

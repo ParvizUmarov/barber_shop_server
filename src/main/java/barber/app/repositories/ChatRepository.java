@@ -12,4 +12,7 @@ import java.util.List;
 public interface ChatRepository extends JpaRepository<Chat, Integer> {
     @Query("SELECT c FROM Chat c WHERE c.barber.id = ?1")
     Collection<Chat> findChatByBarberId(Integer barberId);
+
+    @Query("SELECT c FROM Chat c WHERE c.customer.id = ?1")
+    Collection<Chat> findChatByCustomerId(Integer customerId);
 }

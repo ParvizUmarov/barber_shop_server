@@ -23,4 +23,10 @@ public class Salon {
     @Column(name = "images")
     private String images;
 
+    @Column(name = "longitude")
+    private String longitude;
+
+    @Column(name = "latitude")
+    private String latitude;
+
 }

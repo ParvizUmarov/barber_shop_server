@@ -20,10 +20,10 @@ public class SalonController {
 
     private final SalonService salonService;
 
-    @GetMapping
+    @GetMapping()
     public Collection<SalonDto> getAll(){
         log.info("getAll salons");
-        return salonService.getAll();
+        return salonService.getAllSalons();
     }
 
 

@@ -28,6 +28,13 @@ public class SalonService implements CRUDService<SalonDto>{
                 .toList();
     }
 
+    public Collection<SalonDto> getAllSalons(){
+        return repository.getAllSalons()
+                .stream()
+                .map(SalonService::mapToDto)
+                .toList();
+    }
+
     @Override
     public void create(SalonDto object, String token) {
         repository.save(mapToEntity(object));
@@ -59,6 +66,8 @@ public class SalonService implements CRUDService<SalonDto>{
         salon.setId(salonDto.getId());
         salon.setAddress(salonDto.getAddress());
         salon.setImages(salonDto.getImages());
+        salon.setLongitude(salonDto.getLongitude());
+        salon.setLatitude(salonDto.getLatitude());
         return salon;
     }
 
@@ -67,6 +76,8 @@ public class SalonService implements CRUDService<SalonDto>{
         salonDto.setId(salon.getId());
         salonDto.setAddress(salon.getAddress());
         salonDto.setImages(salon.getImages());
+        salonDto.setLatitude(salon.getLatitude());
+        salonDto.setLongitude(salon.getLongitude());
         return salonDto;
     }
 
